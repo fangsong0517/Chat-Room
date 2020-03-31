@@ -11,14 +11,15 @@
 #include "../common/color.h"
 
 char *conf = "./client.conf";
-
 int sockfd;
 
-void *logout(int signalnum) {
+char logfile[50] = {0};
+void logout(int signalnum) {
     close(sockfd);
+    printf("您已退出.\n");
     exit(1);
-    printf("recv a signal");
 }
+
 
 int main() {
     int port;
@@ -26,47 +27,74 @@ int main() {
     char ip[20] = {0};
     port = atoi(get_value(conf, "SERVER_PORT"));
     strcpy(ip, get_value(conf, "SERVER_IP"));
-    printf("ip = %s , port = %d\n", ip, port);
-   
-    if((sockfd = socket_connect(ip, port)) < 0) {
+    strcpy(logfile, get_value(conf, "LOG_FILE"));
+
+
+    if ((sockfd = socket_connect(ip, port)) < 0) {
         perror("socket_connect");
         return 1;
     }
     strcpy(msg.from, get_value(conf, "MY_NAME"));
-    printf("%s\n", msg.from);
     msg.flag = 2;
-    if(chat_send(msg, sockfd) < 0) {
+    if (chat_send(msg, sockfd) < 0) {
         return 2;
     }
+
     struct RecvMsg rmsg = chat_recv(sockfd);
 
-    if(rmsg.retval < 0) {
+    if (rmsg.retval < 0) {
         fprintf(stderr, "Error!\n");
         return 1;
     }
-    printf(GREEN"Server "NONE": %s", rmsg.msg.message);
 
-    if(rmsg.msg.flag == 3) {
+    printf(GREEN"Server "NONE": %s\n", rmsg.msg.message);
+
+    if (rmsg.msg.flag == 3) {
         close(sockfd);
         return 1;
     }
 
+    signal(SIGINT, logout);
     pid_t pid;
-    if((pid = fork()) < 0) {
+    if ((pid = fork()) < 0){
         perror("fork");
     }
-    if(pid == 0) {
-        signal(SIGINT, logout);
+    if (pid == 0) {
+        sleep(2);
         system("clear");
-        while(1) {
+        char c = 'a';
+        while (c != EOF) {
             printf(L_PINK"Please Input Message:"NONE"\n");
             scanf("%[^\n]s", msg.message);
-            getchar();
+            c = getchar();
+            msg.flag = 0;
+            if (msg.message[0] == '@') {
+                msg.flag = 1;
+            }
             chat_send(msg, sockfd);
             memset(msg.message, 0, sizeof(msg.message));
             system("clear");
         }
+        close(sockfd);
     } else {
+        freopen(logfile, "a+", stdout);
+        while (1) {
+            rmsg = chat_recv(sockfd);
+            if (rmsg.retval < 0) {
+                printf("Error in Server!\n");
+                break;
+            }
+            if (rmsg.msg.flag == 0) {
+                printf(L_BLUE"%s"NONE": %s\n", rmsg.msg.from, rmsg.msg.message);
+            } else if (rmsg.msg.flag == 2) {
+                printf(YELLOW"通知信息: " NONE "%s\n", rmsg.msg.message);
+            } else if (rmsg.msg.flag == 1){
+                printf(L_BLUE"%s"L_GREEN"*"NONE": %s\n", rmsg.msg.from, rmsg.msg.message);
+            } else {
+                printf("Error!\n");
+            }
+                fflush(stdout);
+        }
         wait(NULL);
         close(sockfd);
     }
