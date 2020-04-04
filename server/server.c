@@ -36,7 +36,14 @@ int check_name(char *name) {
     }
     return -1;
 }
-
+void chat_name(struct Msg msg, int fd) {
+    for(int i = 0; i < MAX_CLIENT; i++) {
+        if(client[i].online) {
+            strcpy(msg.message, client[i].name);
+            chat_send(msg, fd);
+        }
+    }
+}
 
 void *work(void *arg) {
     int sub = *(int *)arg;
@@ -53,7 +60,11 @@ void *work(void *arg) {
             return NULL;
         }
         printf(BLUE"%s"NONE" : %s\n",rmsg.msg.from, rmsg.msg.message);
-        if(rmsg.msg.flag == 0) {//公聊
+        if(!strcmp(rmsg.msg.message, "#1")){
+            sprintf(rmsg.msg.message, "%d", sum);
+            chat_send(rmsg.msg, client_fd);
+            chat_name(rmsg.msg, client_fd);
+        } else if(rmsg.msg.flag == 0) {//公聊
             send_all(rmsg.msg);
         } else if(rmsg.msg.flag == 1){//私聊
             if(rmsg.msg.message[0] == '@') {
