@@ -45,11 +45,11 @@ int main(int argc, char **argv) {
             perror("fopen");
             continue;
         }
-        fseek(fp, 0L, SEEK_END);
-        filemsg.size = ftell(fp);
+        fseek(fp, 0L, SEEK_END);//文件指针指到最后
+        filemsg.size = ftell(fp);//就能算出文件大小
         strcpy(filemsg.name, name);
-        fseek(fp, 0L, SEEK_SET);
-        while((size = fread(filemsg.buf, 1, 4096, fp))) {
+        fseek(fp, 0L, SEEK_SET);//文件指向首部     SEEK_CUR为当前位置
+        while((size = fread(filemsg.buf, 1, 4096, fp))) {//读文件
             send(sockfd, (void *)&filemsg, sizeof(filemsg), 0);
             memset(filemsg.buf, 0, sizeof(filemsg.buf));
         }
