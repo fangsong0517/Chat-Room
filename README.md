@@ -12,7 +12,7 @@
 # 安装
 
 ```html
-git clone https://gitee.com/fgsong/Chat-Room-Carbon-Copy.git
+git clone https://gitee.com/fgsong/Chat-Room.git
 ```
 
 # 使用方法
@@ -20,7 +20,7 @@ git clone https://gitee.com/fgsong/Chat-Room-Carbon-Copy.git
 可自定义server和client文件中的配置文件server.conf和client.conf
 
 ```bash
-cd Char-Room-Carbon-Copy
+cd Char-Room
 vim ./server/server.conf
 ```
 
@@ -62,7 +62,7 @@ cd ./server
 打开另一个终端：
 
 ```bash
-cd Char-Room-Carbon-Copy/client
+cd Char-Room/client
 ./client
 ```
 
