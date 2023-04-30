@@ -1,1 +1,0 @@
-gcc sender.c ../common/common.c ../common/tcp_client.c -o client

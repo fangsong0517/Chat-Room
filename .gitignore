@@ -1,0 +1,15 @@
+# 忽略所有编译生成的文件
+*.class
+*.war
+*.jar
+
+# 忽略所有IDE生成的文件
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# 忽略日志和临时文件
+logs/
+temp/
+*.log
